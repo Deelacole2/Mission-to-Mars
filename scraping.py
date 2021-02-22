@@ -17,6 +17,7 @@ def scrape_all():
         "news_paragraph": news_paragraph,
         "featured_image": featured_image(browser),
         "facts": mars_facts(),
+        "results": mars_hemispheres(browser),
         "last_modified": dt.datetime.now()
     }
 
@@ -92,9 +93,43 @@ def mars_facts():
     df.set_index('Description', inplace=True)
 
     # converts the df back to html-ready code
-    return df.to_html(classes='table table-striped')
+    return df.to_html(classes="table table-striped")
+
+# #### Hemispheres
+def mars_hemispheres(browser):
+    
+    # 1. Use browser to visit the URL 
+    url = 'https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars'
+    browser.visit(url)
+
+    # 2. Create a list to hold the images and titles.
+    results = []
+
+    for i in range(4):
+        hemisphere = {}
+    
+    try:
+        browser.find_by_css("a.itemLink h3")[i].click()
+
+    except BaseException:
+        return None
+    
+    sample_elem = browser.links.find_by_text("Sample").first
+    hemisphere["img_url"] = sample_elem["href"]
+    
+    # Get Hemisphere title
+    hemisphere["title"] = browser.find_by_css("h2.title").text
+    
+    # Get hemisphere object to list
+    results.append(hemisphere)
+    
+    #Finally, we navigate backwards
+    browser.back()    
+    
+    return results
 
 if __name__ == "__main__":
 
     # If running as script, print scraped data
     print(scrape_all())
+
