@@ -1,7 +1,7 @@
 
 # Import Splinter, BeautifulSoup and Pandas
 from splinter import Browser
-from bs4 import BeautifulSoup as soup
+from bs4 import BeautifulSoup as soup, BeautifulStoneSoup
 import pandas as pd
 import datetime as dt
 
@@ -17,7 +17,7 @@ def scrape_all():
         "news_paragraph": news_paragraph,
         "featured_image": featured_image(browser),
         "facts": mars_facts(),
-        "results": mars_hemispheres(browser),
+        "hemispehere_image_urls": mars_hemispheres(browser),
         "last_modified": dt.datetime.now()
     }
 
@@ -102,34 +102,36 @@ def mars_hemispheres(browser):
     url = 'https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars'
     browser.visit(url)
 
-    # 2. Create a list to hold the images and titles.
-    results = []
+# 2. Create a list to hold the images and titles.
+    hemisphere_image_urls = []
+    links = browser.find_by_css("a.product-item h3")
 
-    for i in range(4):
+# 3. Write code to retrieve the image urls and titles for each hemisphere
+    for i in range(len(links)):
         hemisphere = {}
-    
-    try:
-        browser.find_by_css("a.itemLink h3")[i].click()
+        try:
+        # We have to find the elements on each loop to avoid a stale element exception
+            browser.find_by_css("a.product-item h3")[i].click()
 
-    except BaseException:
-        return None
-    
-    sample_elem = browser.links.find_by_text("Sample").first
-    hemisphere["img_url"] = sample_elem["href"]
-    
-    # Get Hemisphere title
-    hemisphere["title"] = browser.find_by_css("h2.title").text
-    
-    # Get hemisphere object to list
-    results.append(hemisphere)
-    
-    #Finally, we navigate backwards
-    browser.back()    
-    
-    return results
+        except BaseException:
+            return None  
+        
+        # Next, we find the Sample image anchor tag and extract the href
+        sample_elem = browser.links.find_by_text('Sample').first
+        hemisphere['img_url'] = sample_elem['href']
+        
+        # Get Hemisphere title
+        hemisphere['title'] = browser.find_by_css("h2.title").text
+        
+        # Append hemisphere object to list
+        hemisphere_image_urls.append(hemisphere)
+        
+        browser.back() 
+        
+        return hemisphere_image_urls
 
 if __name__ == "__main__":
 
-    # If running as script, print scraped data
+# If running as script, print scraped data
     print(scrape_all())
 

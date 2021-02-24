@@ -77,56 +77,35 @@ df.to_html()
 
 # # D1: Scrape High-Resolution Mars' Hemisphere Images and Titles
 
-# In[ ]:
-
 
 # 1. Use browser to visit the URL 
 url = 'https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars'
 browser.visit(url)
 
-
-# In[24]:
-
-
 # 2. Create a list to hold the images and titles.
-results = []
-
-
-# In[ ]:
-
+hemisphere_image_urls = []
+links = browser.find_by_css("a.product-item h3")
 
 # 3. Write code to retrieve the image urls and titles for each hemisphere
-
-for i in range(4):
-    hemispheres = {}
+for i in range(len(links)):
+    hemisphere = {}
+    # We have to find the elements on each loop to avoid a stale element exception
+    browser.find_by_css("a.product-item h3")[i].click()
     
-    browser.find_by_css("a.itemLink h3")[i].click()
-    
-    sample_elem = browser.links.find_by_text("Sample").first
-    hemispheres["img_url"] = sample_elem["href"]
-    print(sample_elem)
+    # Next, we find the Sample image anchor tag and extract the href
+    sample_elem = browser.links.find_by_text('Sample').first
+    hemisphere['img_url'] = sample_elem['href']
     
     # Get Hemisphere title
-    hemispheres["title"] = browser.find_by_css("h2.title").get_text()
+    hemisphere['title'] = browser.find_by_css("h2.title").text
     
-    print(hemispheres)
+    # Append hemisphere object to list
+    hemisphere_image_urls.append(hemisphere)
     
-    # Get hemisphere object to list
-    results.append(hemispheres)
-    
-    #Finally, we navigate backwards
     browser.back()
 
-
-# In[26]:
-
-
 # 4. Print the list that holds the dictionary of each image url and title.
-results
-
-
-# In[19]:
-
+hemisphere_image_urls
 
 browser.quit()
 
